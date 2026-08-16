@@ -40,6 +40,15 @@ go.work.sum
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+/.idea/.gitignore
+/.idea/buildon.iml
+/.idea/go.imports.xml
+/go.mod
+/.idea/golinter.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
 
 # AWS User-specific
 .idea/**/aws.xml
@@ -55,6 +64,7 @@ go.work.sum
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+
 
 # Gradle
 .idea/**/gradle.xml
