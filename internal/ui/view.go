@@ -38,27 +38,27 @@ func (m Model) View() tea.View {
 	var options []string
 
 	switch m.screen {
-	case ScreenMain:
+	case screenMain:
 		header = "Main Menu"
 		subtitle = "What would you like to work on?"
 		for i, action := range m.main {
-			options = append(options, m.renderOption(i, action.String()))
+			options = append(options, m.renderOption(i, action.string()))
 		}
-	case ScreenProjectActions, ScreenProblemActions:
-		if m.screen == ScreenProjectActions {
+	case screenProjectActions, screenProblemActions:
+		if m.screen == screenProjectActions {
 			header = "Projects"
 		} else {
 			header = "Problems"
 		}
 		subtitle = "Choose an action to perform."
 		for i, action := range m.crud {
-			options = append(options, m.renderOption(i, action.String()))
+			options = append(options, m.renderOption(i, action.string()))
 		}
-	case ScreenSearch:
+	case screenSearch:
 		header = "Search"
 		subtitle = "What would you like to search?"
 		for i, action := range m.search {
-			options = append(options, m.renderOption(i, action.String()))
+			options = append(options, m.renderOption(i, action.string()))
 		}
 	default:
 		return tea.NewView("")

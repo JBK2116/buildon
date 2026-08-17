@@ -2,76 +2,76 @@ package ui
 
 import tea "charm.land/bubbletea/v2"
 
-// Screen represents the current display mode of the application.
-type Screen int
+// screen represents the current display mode of the application.
+type screen int
 
-// MainAction represents the main menu actions.
-type MainAction int
+// mainAction represents the main menu actions.
+type mainAction int
 
-// CrudAction represents the available CRUD actions.
-type CrudAction int
+// crudAction represents the available CRUD actions.
+type crudAction int
 
-// SearchAction represents the available search menu actions.
-type SearchAction int
+// searchAction represents the available search menu actions.
+type searchAction int
 
 const (
-	ScreenMain Screen = iota
-	ScreenProjectActions
-	ScreenProblemActions
-	ScreenSearch
+	screenMain screen = iota
+	screenProjectActions
+	screenProblemActions
+	screenSearch
 )
 
 const (
-	ActionProject MainAction = iota
-	ActionProblem
-	ActionSearch
+	actionProject mainAction = iota
+	actionProblem
+	actionSearch
 )
 
 const (
-	ActionCreate CrudAction = iota
-	ActionEdit
-	ActionDelete
+	actionCreate crudAction = iota
+	actionEdit
+	actionDelete
 )
 
 const (
-	SearchProjects SearchAction = iota
-	SearchProblems
+	searchProjects searchAction = iota
+	searchProblems
 )
 
-// String represents the string attribute of the underlying type.
-func (m MainAction) String() string {
+// string represents the string attribute of the underlying type.
+func (m mainAction) string() string {
 	switch m {
-	case ActionProject:
+	case actionProject:
 		return "Projects"
-	case ActionProblem:
+	case actionProblem:
 		return "Problems"
-	case ActionSearch:
+	case actionSearch:
 		return "Search"
 	default:
 		return "Unknown"
 	}
 }
 
-// String represents the string attribute of the underlying type.
-func (c CrudAction) String() string {
+// string represents the string attribute of the underlying type.
+func (c crudAction) string() string {
 	switch c {
-	case ActionCreate:
+	case actionCreate:
 		return "Create"
-	case ActionEdit:
+	case actionEdit:
 		return "Edit"
-	case ActionDelete:
+	case actionDelete:
 		return "Delete"
 	default:
 		return "Unknown"
 	}
 }
 
-// String represents the string attribute of the underlying type.
-func (s SearchAction) String() string {
+// string represents the string attribute of the underlying type.
+func (s searchAction) string() string {
 	switch s {
-	case SearchProjects:
+	case searchProjects:
 		return "Projects"
-	case SearchProblems:
+	case searchProblems:
 		return "Problems"
 	default:
 		return "Unknown"
@@ -81,17 +81,17 @@ func (s SearchAction) String() string {
 // Model represents the structure of the application state.
 type Model struct {
 	// main represents the main menu actions.
-	main []MainAction
+	main []mainAction
 	// crd represents the crud actions.
-	crud []CrudAction
+	crud []crudAction
 	// search represents the search menu actions.
-	search []SearchAction
+	search []searchAction
 	// cursor represents the current selected action.
 	cursor int
 	// screen represents the mode of the application state.
-	screen Screen
+	screen screen
 	// history tracks the application state.
-	history []Screen
+	history []screen
 	// err handles the current displayed error.
 	err error
 }
@@ -99,12 +99,12 @@ type Model struct {
 // InitialModel returns the initial internal state of the application.
 func InitialModel() Model {
 	return Model{
-		main:    []MainAction{ActionProject, ActionProblem, ActionSearch},
-		crud:    []CrudAction{ActionCreate, ActionEdit, ActionDelete},
-		search:  []SearchAction{SearchProjects, SearchProblems},
+		main:    []mainAction{actionProject, actionProblem, actionSearch},
+		crud:    []crudAction{actionCreate, actionEdit, actionDelete},
+		search:  []searchAction{searchProjects, searchProblems},
 		cursor:  0,
-		screen:  ScreenMain,
-		history: make([]Screen, 0),
+		screen:  screenMain,
+		history: make([]screen, 0),
 		err:     nil,
 	}
 }

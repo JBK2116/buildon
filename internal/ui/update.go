@@ -39,13 +39,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// cursor is pointing at.
 		case "enter", "space", "l":
 			switch m.screen {
-			case ScreenMain:
+			case screenMain:
 				return m.selectMain()
-			case ScreenProjectActions:
-				return m.selectCrud(ScreenProjectActions)
-			case ScreenProblemActions:
-				return m.selectCrud(ScreenProblemActions)
-			case ScreenSearch:
+			case screenProjectActions:
+				return m.selectCrud(screenProjectActions)
+			case screenProblemActions:
+				return m.selectCrud(screenProblemActions)
+			case screenSearch:
 				return m.selectSearch()
 			}
 		}
@@ -58,11 +58,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // currentLen returns the number of selectable options on the current screen.
 func (m Model) currentLen() int {
 	switch m.screen {
-	case ScreenMain:
+	case screenMain:
 		return len(m.main)
-	case ScreenProjectActions, ScreenProblemActions:
+	case screenProjectActions, screenProblemActions:
 		return len(m.crud)
-	case ScreenSearch:
+	case screenSearch:
 		return len(m.search)
 	default:
 		return 0
@@ -75,14 +75,14 @@ func (m Model) selectMain() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	action := m.main[m.cursor]
-	m.history = append(m.history, ScreenMain)
+	m.history = append(m.history, screenMain)
 	switch action {
-	case ActionProject:
-		m.screen = ScreenProjectActions
-	case ActionProblem:
-		m.screen = ScreenProblemActions
-	case ActionSearch:
-		m.screen = ScreenSearch
+	case actionProject:
+		m.screen = screenProjectActions
+	case actionProblem:
+		m.screen = screenProblemActions
+	case actionSearch:
+		m.screen = screenSearch
 	}
 	m.cursor = 0
 
@@ -90,7 +90,7 @@ func (m Model) selectMain() (tea.Model, tea.Cmd) {
 }
 
 // selectCrud handles selecting a CRUD option on a project/problem screen.
-func (m Model) selectCrud(from Screen) (tea.Model, tea.Cmd) {
+func (m Model) selectCrud(from screen) (tea.Model, tea.Cmd) {
 	if m.cursor >= len(m.crud) {
 		return m, nil
 	}
@@ -108,7 +108,7 @@ func (m Model) selectSearch() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	action := m.search[m.cursor]
-	m.history = append(m.history, ScreenSearch)
+	m.history = append(m.history, screenSearch)
 	// TODO: handle action based on search type
 	_ = action
 
