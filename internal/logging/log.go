@@ -6,11 +6,11 @@ import (
 	"os"
 )
 
-// newLogger returns a new [slog.Logger] that writes JSON formatted logs to standard output.
-func newLogger() *slog.Logger {
+// GetLogger returns a new [slog.Logger] that writes JSON formatted logs to standard output.
+func GetLogger() *slog.Logger {
 	opts := &slog.HandlerOptions{
 		AddSource: true,
-		Level:     slog.LevelDebug,
+		Level:     slog.LevelInfo,
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
 	return logger

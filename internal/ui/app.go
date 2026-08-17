@@ -1,6 +1,10 @@
 package ui
 
-import tea "charm.land/bubbletea/v2"
+import (
+	tea "charm.land/bubbletea/v2"
+
+	"github.com/JBK2116/buildon/internal/db"
+)
 
 // screen represents the current display mode of the application.
 type screen int
@@ -82,7 +86,7 @@ func (s searchAction) string() string {
 type Model struct {
 	// main represents the main menu actions.
 	main []mainAction
-	// crd represents the crud actions.
+	// crud represents the crud actions.
 	crud []crudAction
 	// search represents the search menu actions.
 	search []searchAction
@@ -90,22 +94,25 @@ type Model struct {
 	cursor int
 	// screen represents the mode of the application state.
 	screen screen
+	// repository provides database functionality to the application.
+	repository *db.Repository
 	// history tracks the application state.
 	history []screen
 	// err handles the current displayed error.
 	err error
 }
 
-// InitialModel returns the initial internal state of the application.
-func InitialModel() Model {
+// InitialModel returns the initial state of the application.
+func InitialModel(repository *db.Repository) Model {
 	return Model{
-		main:    []mainAction{actionProject, actionProblem, actionSearch},
-		crud:    []crudAction{actionCreate, actionEdit, actionDelete},
-		search:  []searchAction{searchProjects, searchProblems},
-		cursor:  0,
-		screen:  screenMain,
-		history: make([]screen, 0),
-		err:     nil,
+		main:       []mainAction{actionProject, actionProblem, actionSearch},
+		crud:       []crudAction{actionCreate, actionEdit, actionDelete},
+		search:     []searchAction{searchProjects, searchProblems},
+		cursor:     0,
+		screen:     screenMain,
+		repository: repository,
+		history:    make([]screen, 0),
+		err:        nil,
 	}
 }
 

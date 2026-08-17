@@ -4,8 +4,10 @@ import "time"
 
 // Problem represents a singular problem within a project.
 type Problem struct {
-	title     string
-	content   string
-	createdAt time.Time
-	updatedAt time.Time
+	ID        int
+	ProjectID int
+	Title     string
+	Content   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
