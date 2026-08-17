@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 )
@@ -61,6 +62,7 @@ CREATE TABLE IF NOT EXISTS problems (
 	project_id INTEGER NOT NULL,
 	title      TEXT    NOT NULL,
 	content    TEXT    NOT NULL,
+	solved     INTEGER NOT NULL DEFAULT 0,
 	created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
 	updated_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
 	FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
@@ -71,7 +73,7 @@ CREATE INDEX IF NOT EXISTS idx_problems_project_id ON problems (project_id);
 
 // schemaVersion is bumped whenever the schema changes, tracking applied migrations
 // via SQLite's PRAGMA user_version.
-const schemaVersion = 1
+const schemaVersion = 2
 
 // initializeSchema applies the schema to the database only if it has not already
 // been applied. It uses PRAGMA user_version to detect whether the current schema
@@ -94,6 +96,20 @@ func initializeSchema(db *sql.DB, logger *slog.Logger) (bool, error) {
 	if _, err := db.ExecContext(ctx, schema); err != nil {
 		logger.Error("failed to run migrations", "error", err)
 		return false, err
+	}
+
+	// Alter existing tables created by older schema versions that predate the
+	// migrations below. These are safe to run on fresh databases because the
+	// column already exists, in which case the "duplicate column" error is
+	// tolerated.
+	alterations := []string{
+		"ALTER TABLE problems ADD COLUMN solved INTEGER NOT NULL DEFAULT 0",
+	}
+	for _, alter := range alterations {
+		if _, err := db.ExecContext(ctx, alter); err != nil && !strings.Contains(err.Error(), "duplicate column") {
+			logger.Error("failed to run table alteration", "error", err)
+			return false, err
+		}
 	}
 
 	if _, err := db.ExecContext(ctx, fmt.Sprintf("PRAGMA user_version = %d", schemaVersion)); err != nil {

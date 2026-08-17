@@ -40,14 +40,14 @@ func (r *Repository) CreateProject(title string) error {
 }
 
 // CreateProblem inserts a new problem into the database.
-func (r *Repository) CreateProblem(projectID int, title string, content string) error {
+func (r *Repository) CreateProblem(projectID int, title string, content string, solved bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDB)
 	defer cancel()
 	query := `
-	INSERT INTO problems (project_id, title, content)
-	VALUES (?, ?, ?)
+	INSERT INTO problems (project_id, title, content, solved)
+	VALUES (?, ?, ?, ?)
 	`
-	_, err := r.db.ExecContext(ctx, query, projectID, title, content)
+	_, err := r.db.ExecContext(ctx, query, projectID, title, content, solved)
 	if err != nil {
 		r.logger.Error("failed to insert problem into database", "error", err)
 		return err
@@ -59,7 +59,7 @@ func (r *Repository) CreateProblem(projectID int, title string, content string) 
 func (r *Repository) GetProjects() ([]model.Project, error) {
 	query := `
 	SELECT p.id, p.title, p.created_at, p.updated_at,
-	       pr.id, pr.project_id, pr.title, pr.content, pr.created_at, pr.updated_at
+	       pr.id, pr.project_id, pr.title, pr.content, pr.solved, pr.created_at, pr.updated_at
 	FROM projects p
 	LEFT JOIN problems pr ON pr.project_id = p.id
 	ORDER BY p.created_at DESC, pr.created_at DESC
@@ -84,11 +84,12 @@ func (r *Repository) GetProjects() ([]model.Project, error) {
 		var p model.Project
 		var probID, probProjectID sql.NullInt64
 		var probTitle, probContent sql.NullString
+		var probSolved sql.NullBool
 		var probCreatedAt, probUpdatedAt sql.NullTime
 
 		if scanErr := rows.Scan(
 			&p.ID, &p.Title, &p.CreatedAt, &p.UpdatedAt,
-			&probID, &probProjectID, &probTitle, &probContent, &probCreatedAt, &probUpdatedAt,
+			&probID, &probProjectID, &probTitle, &probContent, &probSolved, &probCreatedAt, &probUpdatedAt,
 		); scanErr != nil {
 			return nil, scanErr
 		}
@@ -107,6 +108,7 @@ func (r *Repository) GetProjects() ([]model.Project, error) {
 				ProjectID: int(probProjectID.Int64),
 				Title:     probTitle.String,
 				Content:   probContent.String,
+				Solved:    probSolved.Bool,
 				CreatedAt: probCreatedAt.Time,
 				UpdatedAt: probUpdatedAt.Time,
 			})
@@ -122,7 +124,7 @@ func (r *Repository) GetProjects() ([]model.Project, error) {
 func (r *Repository) GetProject(id int) (*model.Project, error) {
 	query := `
 	SELECT p.id, p.title, p.created_at, p.updated_at,
-	       pr.id, pr.project_id, pr.title, pr.content, pr.created_at, pr.updated_at
+	       pr.id, pr.project_id, pr.title, pr.content, pr.solved, pr.created_at, pr.updated_at
 	FROM projects p
 	LEFT JOIN problems pr ON pr.project_id = p.id
 	WHERE p.id = ?
@@ -148,11 +150,12 @@ func (r *Repository) GetProject(id int) (*model.Project, error) {
 		var p model.Project
 		var probID, probProjectID sql.NullInt64
 		var probTitle, probContent sql.NullString
+		var probSolved sql.NullBool
 		var probCreatedAt, probUpdatedAt sql.NullTime
 
 		if scanErr := rows.Scan(
 			&p.ID, &p.Title, &p.CreatedAt, &p.UpdatedAt,
-			&probID, &probProjectID, &probTitle, &probContent, &probCreatedAt, &probUpdatedAt,
+			&probID, &probProjectID, &probTitle, &probContent, &probSolved, &probCreatedAt, &probUpdatedAt,
 		); scanErr != nil {
 			return nil, scanErr
 		}
@@ -168,6 +171,7 @@ func (r *Repository) GetProject(id int) (*model.Project, error) {
 				ProjectID: int(probProjectID.Int64),
 				Title:     probTitle.String,
 				Content:   probContent.String,
+				Solved:    probSolved.Bool,
 				CreatedAt: probCreatedAt.Time,
 				UpdatedAt: probUpdatedAt.Time,
 			})
@@ -185,7 +189,7 @@ func (r *Repository) GetProject(id int) (*model.Project, error) {
 // GetProblems queries all problems from the database.
 func (r *Repository) GetProblems() ([]model.Problem, error) {
 	query := `
-	SELECT id, project_id, title, content, created_at, updated_at
+	SELECT id, project_id, title, content, solved, created_at, updated_at
 	FROM problems
 	ORDER BY created_at DESC
 	`
@@ -206,7 +210,15 @@ func (r *Repository) GetProblems() ([]model.Problem, error) {
 	problems := make([]model.Problem, 0)
 	for rows.Next() {
 		var p model.Problem
-		if scanErr := rows.Scan(&p.ID, &p.ProjectID, &p.Title, &p.Content, &p.CreatedAt, &p.UpdatedAt); scanErr != nil {
+		if scanErr := rows.Scan(
+			&p.ID,
+			&p.ProjectID,
+			&p.Title,
+			&p.Content,
+			&p.Solved,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+		); scanErr != nil {
 			return nil, scanErr
 		}
 		problems = append(problems, p)
@@ -220,7 +232,7 @@ func (r *Repository) GetProblems() ([]model.Problem, error) {
 // GetProblem queries a problem from the database with the matching id.
 func (r *Repository) GetProblem(id int) (*model.Problem, error) {
 	query := `
-	SELECT id, project_id, title, content, created_at, updated_at
+	SELECT id, project_id, title, content, solved, created_at, updated_at
 	FROM problems
 	WHERE id = ?
 	`
@@ -229,7 +241,7 @@ func (r *Repository) GetProblem(id int) (*model.Problem, error) {
 
 	var p model.Problem
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&p.ID, &p.ProjectID, &p.Title, &p.Content, &p.CreatedAt, &p.UpdatedAt,
+		&p.ID, &p.ProjectID, &p.Title, &p.Content, &p.Solved, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -261,15 +273,16 @@ func (r *Repository) UpdateProject(id int, title string) error {
 	return nil
 }
 
-// UpdateProblem updates the problem with the provided id, title and content in the database.
-func (r *Repository) UpdateProblem(id int, title string, content string) error {
+// UpdateProblem updates the problem with the provided id, title, content and
+// solved status in the database.
+func (r *Repository) UpdateProblem(id int, title string, content string, solved bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDB)
 	defer cancel()
 
 	query := `
-	UPDATE problems SET title = ?, content = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?
+	UPDATE problems SET title = ?, content = ?, solved = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?
 	`
-	result, err := r.db.ExecContext(ctx, query, title, content, id)
+	result, err := r.db.ExecContext(ctx, query, title, content, solved, id)
 	if err != nil {
 		r.logger.Error("failed to update project in database", "error", err)
 		return err

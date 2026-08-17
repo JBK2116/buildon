@@ -8,6 +8,7 @@ type Problem struct {
 	ProjectID int
 	Title     string
 	Content   string
+	Solved    bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
