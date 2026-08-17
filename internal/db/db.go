@@ -51,10 +51,11 @@ func newDB(logger *slog.Logger) (*sql.DB, error) {
 
 const schema = `
 CREATE TABLE IF NOT EXISTS projects (
-	id         INTEGER PRIMARY KEY AUTOINCREMENT,
-	title      TEXT    NOT NULL,
-	created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-	updated_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+	id          INTEGER PRIMARY KEY AUTOINCREMENT,
+	title       TEXT    NOT NULL,
+	description TEXT    NOT NULL DEFAULT '',
+	created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+	updated_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
 CREATE TABLE IF NOT EXISTS problems (
@@ -73,7 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_problems_project_id ON problems (project_id);
 
 // schemaVersion is bumped whenever the schema changes, tracking applied migrations
 // via SQLite's PRAGMA user_version.
-const schemaVersion = 2
+const schemaVersion = 3
 
 // initializeSchema applies the schema to the database only if it has not already
 // been applied. It uses PRAGMA user_version to detect whether the current schema
@@ -104,6 +105,7 @@ func initializeSchema(db *sql.DB, logger *slog.Logger) (bool, error) {
 	// tolerated.
 	alterations := []string{
 		"ALTER TABLE problems ADD COLUMN solved INTEGER NOT NULL DEFAULT 0",
+		"ALTER TABLE projects ADD COLUMN description TEXT NOT NULL DEFAULT ''",
 	}
 	for _, alter := range alterations {
 		if _, err := db.ExecContext(ctx, alter); err != nil && !strings.Contains(err.Error(), "duplicate column") {

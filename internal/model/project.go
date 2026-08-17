@@ -5,9 +5,10 @@ import "time"
 
 // Project represents a singular project that contains problems.
 type Project struct {
-	ID        int
-	Title     string
-	Problems  []Problem
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID          int
+	Title       string
+	Description string
+	Problems    []Problem
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
