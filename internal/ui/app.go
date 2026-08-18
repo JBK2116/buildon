@@ -18,11 +18,20 @@ type crudAction int
 // searchAction represents the available search menu actions.
 type searchAction int
 
+// notification represents a transient status message shown to the user.
+type notification struct {
+	// message is the text to display.
+	message string
+	// isError indicates whether the notification conveys an error.
+	isError bool
+}
+
 const (
 	screenMain screen = iota
 	screenProjectActions
 	screenProblemActions
 	screenSearch
+	screenCreateProject
 )
 
 const (
@@ -98,21 +107,24 @@ type Model struct {
 	repository *db.Repository
 	// history tracks the application state.
 	history []screen
-	// err handles the current displayed error.
-	err error
+	// form holds all forms used in the application.
+	form forms
+	// notification is the current status message shown to the user.
+	notification notification
 }
 
 // InitialModel returns the initial state of the application.
 func InitialModel(repository *db.Repository) Model {
 	return Model{
-		main:       []mainAction{actionProject, actionProblem, actionSearch},
-		crud:       []crudAction{actionCreate, actionEdit, actionDelete},
-		search:     []searchAction{searchProjects, searchProblems},
-		cursor:     0,
-		screen:     screenMain,
-		repository: repository,
-		history:    make([]screen, 0),
-		err:        nil,
+		main:         []mainAction{actionProject, actionProblem, actionSearch},
+		crud:         []crudAction{actionCreate, actionEdit, actionDelete},
+		search:       []searchAction{searchProjects, searchProblems},
+		cursor:       0,
+		screen:       screenMain,
+		repository:   repository,
+		history:      make([]screen, 0),
+		form:         getForms(),
+		notification: notification{},
 	}
 }
 
